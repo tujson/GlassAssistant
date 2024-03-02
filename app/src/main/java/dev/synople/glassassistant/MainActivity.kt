@@ -6,7 +6,6 @@ import android.view.KeyEvent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 
-const val OPEN_AI_API_KEY = ""
 
 private const val ASK_MULTIPLE_PERMISSION_REQUEST_CODE = 101;
 

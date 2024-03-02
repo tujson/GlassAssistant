@@ -10,7 +10,6 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -20,6 +19,7 @@ import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
 import dev.synople.glassassistant.databinding.FragmentCameraBinding
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -32,6 +32,8 @@ class CameraFragment : Fragment() {
     private var _binding: FragmentCameraBinding? = null
     private val binding get() = _binding!!
     private var imageCapture: ImageCapture? = null
+
+    private var capturedImage = ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -92,10 +94,8 @@ class CameraFragment : Fragment() {
                 override fun
                         onImageSaved(output: ImageCapture.OutputFileResults) {
                     val msg = "Photo capture succeeded: ${output.savedUri}"
-                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
                     Log.d(TAG, msg)
 
-                    // TODO: Pass to LoadingFragment
                     val base64Image =
                         requireContext().contentResolver.openInputStream(output.savedUri!!).use {
                             val bitmap = BitmapFactory.decodeStream(it)
@@ -103,8 +103,12 @@ class CameraFragment : Fragment() {
                             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
                             Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT)
                         }
+                    capturedImage = base64Image
+                    Log.v(TAG, "CapturedImage: ${capturedImage.length}")
+                    file.delete()
 
-                    Log.i(TAG, "Image: ${base64Image.length}")
+                    // TODO: Figure out audio...
+                    startLoading()
                 }
             }
         )
@@ -139,6 +143,16 @@ class CameraFragment : Fragment() {
                 Log.e(TAG, "Use case binding failed", exc)
             }
         }, ContextCompat.getMainExecutor(this.requireContext()))
+    }
+
+    /**
+     * This method checks for a valid audio recording and picture,
+     * then navigates to LoadingFragment.
+     */
+    private fun startLoading() {
+        if (capturedImage != "") {
+            requireView().findNavController().navigate(CameraFragmentDirections.actionCameraFragmentToLoadingFragment("In one sentence, describe the primary object in this image.", capturedImage))
+        }
     }
 
 }

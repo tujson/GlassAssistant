@@ -22,6 +22,12 @@
         <action
             android:id="@+id/action_loadingFragment_to_resultFragment"
             app:destination="@id/resultFragment" />
+        <argument
+            android:name="prompt"
+            app:argType="string" />
+        <argument
+            android:name="base64Image"
+            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/resultFragment"
@@ -31,5 +37,8 @@
         <action
             android:id="@+id/action_resultFragment_to_cameraFragment"
             app:destination="@id/cameraFragment" />
+        <argument
+            android:name="response"
+            app:argType="string" />
     </fragment>
 </navigation>
