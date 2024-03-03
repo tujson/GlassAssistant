@@ -23,8 +23,8 @@
             android:id="@+id/action_loadingFragment_to_resultFragment"
             app:destination="@id/resultFragment" />
         <argument
-            android:name="prompt"
-            app:argType="string" />
+            android:name="recorderFile"
+            app:argType="java.io.File" />
         <argument
             android:name="base64Image"
             app:argType="string" />

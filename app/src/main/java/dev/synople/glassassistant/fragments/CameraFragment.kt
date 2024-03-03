@@ -2,7 +2,10 @@ package dev.synople.glassassistant.fragments
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.MediaRecorder
+import android.os.Build
 import android.os.Bundle
+import android.os.FileObserver
 import android.util.Base64
 import android.util.Log
 import android.util.Size
@@ -10,6 +13,7 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -20,6 +24,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
+import dev.synople.glassassistant.R
 import dev.synople.glassassistant.databinding.FragmentCameraBinding
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -33,6 +38,9 @@ class CameraFragment : Fragment() {
     private val binding get() = _binding!!
     private var imageCapture: ImageCapture? = null
 
+    private lateinit var recorder: MediaRecorder
+    private lateinit var recorderFile: File
+    private var isRecorderFileWritten = false
     private var capturedImage = ""
 
     override fun onCreateView(
@@ -46,7 +54,29 @@ class CameraFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        view.findViewById<TextView>(R.id.tvCamera).text = "Hold the camera button."
+        prepareRecorder()
         startCamera()
+
+//        val fileObserver = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//            object : FileObserver(recorderFile, CLOSE_WRITE) {
+//                override fun onEvent(event: Int, path: String?) {
+//                    Log.v(TAG, "onEvent File 0")
+//
+//                    isRecorderFileWritten = true
+//                    startLoading()
+//                }
+//            }
+//        } else {
+//            object : FileObserver(recorderFile.path, CLOSE_WRITE) {
+//                override fun onEvent(event: Int, path: String?) {
+//                    Log.v(TAG, "onEvent File 1")
+//                    isRecorderFileWritten = true
+//                    startLoading()
+//                }
+//            }
+//        }
+//        fileObserver.startWatching()
 
         view.isFocusableInTouchMode = true
         view.requestFocus()
@@ -54,8 +84,16 @@ class CameraFragment : Fragment() {
             if (keyCode == KeyEvent.KEYCODE_CAMERA) {
                 if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
                     Log.v(TAG, "Camera Key Down")
+
+                    requireActivity().runOnUiThread {
+                        view.findViewById<TextView>(R.id.tvCamera).text = "Speak a prompt, then let go."
+                    }
+
+                    isRecorderFileWritten = false
+                    recorder.start()
                 } else if (event.action == KeyEvent.ACTION_UP) {
                     Log.v(TAG, "Camera Key Up")
+                    recorder.stop()
                     takePhoto()
                 }
                 true
@@ -68,8 +106,8 @@ class CameraFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        recorder.release()
     }
-
 
     private fun takePhoto() {
         val imageCapture = imageCapture ?: return
@@ -114,6 +152,22 @@ class CameraFragment : Fragment() {
         )
     }
 
+    private fun prepareRecorder() {
+        recorderFile =
+            File(requireContext().externalCacheDir.toString() + File.separator + System.currentTimeMillis() + ".mp4")
+
+        recorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            MediaRecorder(requireContext())
+        } else {
+            MediaRecorder()
+        }
+        recorder.setAudioSource(MediaRecorder.AudioSource.MIC)
+        recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT)
+        recorder.setOutputFile(recorderFile)
+        recorder.prepare()
+    }
+
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this.requireContext())
         cameraProviderFuture.addListener({
@@ -148,10 +202,17 @@ class CameraFragment : Fragment() {
     /**
      * This method checks for a valid audio recording and picture,
      * then navigates to LoadingFragment.
+     *
+     * TODO: Somehow check and wait for the `recorderFile` to be saved.
      */
     private fun startLoading() {
         if (capturedImage != "") {
-            requireView().findNavController().navigate(CameraFragmentDirections.actionCameraFragmentToLoadingFragment("In one sentence, describe the primary object in this image.", capturedImage))
+            requireView().findNavController().navigate(
+                CameraFragmentDirections.actionCameraFragmentToLoadingFragment(
+                    recorderFile,
+                    capturedImage
+                )
+            )
         }
     }
 
