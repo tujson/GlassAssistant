@@ -178,11 +178,13 @@ class GlassGestureDetector(context: Context?, onGestureListener: OnGestureListen
                 }
                 currentDownEvent = MotionEvent.obtain(motionEvent)
             }
+
             MotionEvent.ACTION_POINTER_DOWN -> {
                 isTwoFingerGesture = true
                 secondFingerDownX = motionEvent.getX(motionEvent.actionIndex)
                 secondFingerDownY = motionEvent.getY(motionEvent.actionIndex)
             }
+
             MotionEvent.ACTION_MOVE -> {
                 val firstFingerFocusX = motionEvent.getX(FIRST_FINGER_POINTER_INDEX)
                 val firstFingerFocusY = motionEvent.getY(FIRST_FINGER_POINTER_INDEX)
@@ -215,6 +217,7 @@ class GlassGestureDetector(context: Context?, onGestureListener: OnGestureListen
                     firstFingerLastFocusY = firstFingerFocusY
                 }
             }
+
             MotionEvent.ACTION_UP -> {
                 velocityTracker!!.computeCurrentVelocity(VELOCITY_UNIT)
                 firstFingerVelocityX = velocityTracker!!
@@ -224,6 +227,7 @@ class GlassGestureDetector(context: Context?, onGestureListener: OnGestureListen
                 handled = detectGesture()
                 onTouchEnded()
             }
+
             MotionEvent.ACTION_CANCEL -> {
                 velocityTracker!!.recycle()
                 velocityTracker = null

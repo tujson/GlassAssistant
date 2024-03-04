@@ -46,7 +46,6 @@ class CameraFragment : Fragment() {
     private var imageFile: File? = null
     private lateinit var recorderFile: File
     private var isRecorderFileWritten = false
-    private var capturedImage = ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -149,7 +148,6 @@ class CameraFragment : Fragment() {
             )
             .build()
 
-        Log.v(TAG, "Taking picture")
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(requireContext()),

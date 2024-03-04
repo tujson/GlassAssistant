@@ -18,6 +18,7 @@ private val TAG = CameraFragment::class.simpleName!!
 class ResultFragment : Fragment() {
 
     private val args: ResultFragmentArgs by navArgs()
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

@@ -26,7 +26,7 @@ class ApiKeyFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ) = inflater.inflate(R.layout.fragment_api_key, container, false)!!
+    ): View = inflater.inflate(R.layout.fragment_api_key, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -68,8 +68,6 @@ class ApiKeyFragment : Fragment() {
                             barcodeContents
                     }
                 }
-            } ?: run {
-
             }
         }
     }

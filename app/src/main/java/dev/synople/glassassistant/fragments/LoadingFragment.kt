@@ -49,9 +49,7 @@ class LoadingFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_loading, container, false)
-    }
+    ): View = inflater.inflate(R.layout.fragment_loading, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -91,7 +89,7 @@ class LoadingFragment : Fragment() {
             override fun onResponse(call: Call, response: Response) {
                 recorderFile.delete()
                 val responseText = response.body?.string() ?: ""
-                Log.v(TAG, "OpenAI Speech Response: $responseText")
+                Log.d(TAG, "OpenAI Speech Response: $responseText")
 
                 val jsonResponse = JSONObject(responseText)
                 val content = jsonResponse.getString("text")
@@ -153,7 +151,7 @@ class LoadingFragment : Fragment() {
 
             override fun onResponse(call: Call, response: Response) {
                 val responseText = response.body?.string() ?: ""
-                Log.v(TAG, "OpenAI Vision Response: $responseText")
+                Log.d(TAG, "OpenAI Vision Response: $responseText")
 
                 requireActivity().runOnUiThread {
                     requireView().findNavController().navigate(
