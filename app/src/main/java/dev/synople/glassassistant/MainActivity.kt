@@ -31,8 +31,8 @@ class MainActivity : FragmentActivity() {
             GlassGestureDetector(this, object : GlassGestureDetector.OnGestureListener {
                 override fun onGesture(gesture: GlassGestureDetector.Gesture?): Boolean {
                     val isHandled = when (gesture) {
-                        GlassGestureDetector.Gesture.TWO_FINGER_TAP -> true
                         GlassGestureDetector.Gesture.TAP -> true
+                        GlassGestureDetector.Gesture.TWO_FINGER_TAP -> true
                         else -> false
                     }
 
