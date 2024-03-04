@@ -61,8 +61,15 @@ class ResultFragment : Fragment() {
     fun onGesture(glassGesture: GlassGesture) {
         when (glassGesture.gesture) {
             GlassGestureDetector.Gesture.TAP -> {
-                requireView().findNavController().navigate(R.id.action_resultFragment_to_cameraFragment)
+                requireView().findNavController()
+                    .navigate(R.id.action_resultFragment_to_cameraFragment)
             }
+
+            GlassGestureDetector.Gesture.SWIPE_DOWN -> {
+                requireView().findNavController()
+                    .navigate(R.id.action_resultFragment_to_cameraFragment)
+            }
+
             else -> {}
         }
     }

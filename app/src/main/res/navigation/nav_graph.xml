@@ -32,6 +32,9 @@
         <argument
             android:name="imageFile"
             app:argType="java.io.File" />
+        <action
+            android:id="@+id/action_loadingFragment_to_cameraFragment"
+            app:destination="@id/cameraFragment" />
     </fragment>
     <fragment
         android:id="@+id/resultFragment"

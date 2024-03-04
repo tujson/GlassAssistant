@@ -17,6 +17,8 @@ import androidx.navigation.fragment.navArgs
 import dev.synople.glassassistant.R
 import dev.synople.glassassistant.dataStore
 import dev.synople.glassassistant.utils.GlassAssistantConstants
+import dev.synople.glassassistant.utils.GlassGesture
+import dev.synople.glassassistant.utils.GlassGestureDetector
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import okhttp3.Call
@@ -28,6 +30,8 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
@@ -62,6 +66,26 @@ class LoadingFragment : Fragment() {
             args.recorderFile?.let {
                 getSpeechResponse(it)
             } ?: getVisionResponse(GlassAssistantConstants.DEFAULT_PROMPT, args.imageFile)
+        }
+
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        EventBus.getDefault().unregister(this)
+    }
+
+    @Subscribe
+    fun onGesture(glassGesture: GlassGesture) {
+        when (glassGesture.gesture) {
+            GlassGestureDetector.Gesture.SWIPE_DOWN -> {
+                // TODO: Cancel all HTTP calls so we don't try to navigate from LoadingFragment to ResultFragment but the user is actually on CameraFragment
+                requireView().findNavController()
+                    .navigate(R.id.action_loadingFragment_to_cameraFragment)
+            }
+
+            else -> {}
         }
     }
 

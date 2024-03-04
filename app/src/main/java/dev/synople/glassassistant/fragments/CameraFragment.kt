@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import java.io.File
+import kotlin.system.exitProcess
 
 private val TAG = CameraFragment::class.simpleName!!
 
@@ -130,6 +131,11 @@ class CameraFragment : Fragment() {
 
             GlassGestureDetector.Gesture.TWO_FINGER_TAP -> {
                 clearApiKey()
+            }
+
+            GlassGestureDetector.Gesture.SWIPE_DOWN -> {
+                requireActivity().finishAffinity()
+                exitProcess(0)
             }
 
             else -> {}

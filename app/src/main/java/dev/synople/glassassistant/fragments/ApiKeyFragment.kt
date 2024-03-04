@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.datastore.preferences.core.edit
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -13,10 +14,15 @@ import com.google.zxing.integration.android.IntentIntegrator
 import dev.synople.glassassistant.R
 import dev.synople.glassassistant.dataStore
 import dev.synople.glassassistant.utils.GlassAssistantConstants
+import dev.synople.glassassistant.utils.GlassGesture
+import dev.synople.glassassistant.utils.GlassGestureDetector
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import kotlin.system.exitProcess
 
 private val TAG = ApiKeyFragment::class.simpleName!!
 
@@ -45,14 +51,35 @@ class ApiKeyFragment : Fragment() {
                 }
             }
         }
+
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        EventBus.getDefault().unregister(this)
+    }
+
+    @Subscribe
+    fun onGesture(glassGesture: GlassGesture) {
+        when (glassGesture.gesture) {
+
+            GlassGestureDetector.Gesture.SWIPE_DOWN -> {
+                requireActivity().finishAffinity()
+                exitProcess(30000)
+            }
+
+            else -> {}
+        }
     }
 
     private fun startQrCodeScanner() {
         IntentIntegrator.forSupportFragment((this as Fragment))
             .setDesiredBarcodeFormats(IntentIntegrator.QR_CODE)
-            .setPrompt("Open GlassEcho on your phone and scan the QR code")
+            .setPrompt("Scan a QR code with your OpenAI API Key.")
             .setBeepEnabled(false)
             .setBarcodeImageEnabled(false)
+            .setTimeout(30000)
             .initiateScan()
     }
 
@@ -68,6 +95,9 @@ class ApiKeyFragment : Fragment() {
                             barcodeContents
                     }
                 }
+            } ?: {
+                requireView().findViewById<TextView>(R.id.tvApiKey).text =
+                    "Something went wrong. Exit the app and try again."
             }
         }
     }

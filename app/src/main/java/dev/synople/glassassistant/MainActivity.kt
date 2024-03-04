@@ -1,11 +1,13 @@
 package dev.synople.glassassistant
 
 import android.os.Bundle
+import android.util.Log
 import android.view.MotionEvent
 import androidx.fragment.app.FragmentActivity
 import dev.synople.glassassistant.utils.GlassGesture
 import dev.synople.glassassistant.utils.GlassGestureDetector
 import org.greenrobot.eventbus.EventBus
+import kotlin.system.exitProcess
 
 
 private val TAG = MainActivity::class.simpleName!!
@@ -33,6 +35,7 @@ class MainActivity : FragmentActivity() {
                     val isHandled = when (gesture) {
                         GlassGestureDetector.Gesture.TAP -> true
                         GlassGestureDetector.Gesture.TWO_FINGER_TAP -> true
+                        GlassGestureDetector.Gesture.SWIPE_DOWN -> true
                         else -> false
                     }
 
