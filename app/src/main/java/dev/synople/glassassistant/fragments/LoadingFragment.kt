@@ -1,11 +1,15 @@
 package dev.synople.glassassistant.fragments
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
@@ -26,6 +30,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.time.Duration
@@ -58,17 +63,17 @@ class LoadingFragment : Fragment() {
 
             args.recorderFile?.let {
                 getSpeechResponse(it)
-            } ?: getVisionResponse(GlassAssistantConstants.DEFAULT_PROMPT, args.base64Image)
+            } ?: getVisionResponse(GlassAssistantConstants.DEFAULT_PROMPT, args.imageFile)
         }
     }
 
-    private fun getSpeechResponse(paramRecorderFile: File) {
+    private fun getSpeechResponse(recorderFile: File) {
         val speechRequestPayload = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
             .addFormDataPart(
                 "file",
-                paramRecorderFile.name,
-                paramRecorderFile.asRequestBody("audio/mp4".toMediaTypeOrNull())
+                recorderFile.name,
+                recorderFile.asRequestBody("audio/mp4".toMediaTypeOrNull())
             )
             .addFormDataPart("model", "whisper-1")
             .build()
@@ -84,7 +89,7 @@ class LoadingFragment : Fragment() {
             }
 
             override fun onResponse(call: Call, response: Response) {
-                paramRecorderFile.delete()
+                recorderFile.delete()
                 val responseText = response.body?.string() ?: ""
                 Log.v(TAG, "OpenAI Speech Response: $responseText")
 
@@ -95,25 +100,32 @@ class LoadingFragment : Fragment() {
                     requireView().findViewById<TextView>(R.id.tvLoading).text = content
                 }
 
-                getVisionResponse(content, args.base64Image)
+                getVisionResponse(content, args.imageFile)
             }
         })
     }
 
-    private fun getVisionResponse(paramPrompt: String, paramImage: String) {
-        Log.v(TAG, "paramPrompt: $paramPrompt")
-        Log.v(TAG, "paramImage: ${paramImage.substring(0, 10)}")
+    private fun getVisionResponse(prompt: String, imageFile: File) {
+        // Load imageFile to Base64 string
+        val base64Image =
+            requireContext().contentResolver.openInputStream(imageFile.toUri()).use {
+                val bitmap = BitmapFactory.decodeStream(it)
+                val baos = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+                Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT)
+            }
+        imageFile.delete()
 
         // :(. String sub = better?
         val visionRequestPayload = JSONObject()
         visionRequestPayload.put("model", "gpt-4-vision-preview")
         val requestPayloadPrompt = JSONObject()
         requestPayloadPrompt.put("type", "text")
-        requestPayloadPrompt.put("text", paramPrompt)
+        requestPayloadPrompt.put("text", prompt)
         val requestPayloadImage = JSONObject()
         requestPayloadImage.put("type", "image_url")
         val requestPayloadImageUrl = JSONObject()
-        requestPayloadImageUrl.put("url", "data:image/jpeg;base64,$paramImage")
+        requestPayloadImageUrl.put("url", "data:image/jpeg;base64,$base64Image")
         requestPayloadImageUrl.put("detail", "low") // "low", "high", or "auto"
         requestPayloadImage.put("image_url", requestPayloadImageUrl)
         val requestPayloadContent = JSONArray()

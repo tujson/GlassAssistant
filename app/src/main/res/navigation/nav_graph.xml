@@ -30,8 +30,8 @@
             app:argType="java.io.File"
             app:nullable="true" />
         <argument
-            android:name="base64Image"
-            app:argType="string" />
+            android:name="imageFile"
+            app:argType="java.io.File" />
     </fragment>
     <fragment
         android:id="@+id/resultFragment"

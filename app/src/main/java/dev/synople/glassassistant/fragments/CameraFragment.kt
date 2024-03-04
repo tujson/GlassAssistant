@@ -1,11 +1,8 @@
 package dev.synople.glassassistant.fragments
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.Bundle
-import android.util.Base64
 import android.util.Log
 import android.util.Size
 import android.view.KeyEvent
@@ -34,7 +31,6 @@ import dev.synople.glassassistant.utils.GlassGestureDetector
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
-import java.io.ByteArrayOutputStream
 import java.io.File
 
 private val TAG = CameraFragment::class.simpleName!!
@@ -47,6 +43,7 @@ class CameraFragment : Fragment() {
     private var imageCapture: ImageCapture? = null
     private lateinit var recorder: MediaRecorder
 
+    private var imageFile: File? = null
     private lateinit var recorderFile: File
     private var isRecorderFileWritten = false
     private var capturedImage = ""
@@ -143,11 +140,12 @@ class CameraFragment : Fragment() {
     private fun takePhoto(isDefaultPrompt: Boolean) {
         val imageCapture = imageCapture ?: return
 
-        val file =
+        imageFile?.delete()
+        imageFile =
             File(requireContext().externalCacheDir.toString() + File.separator + System.currentTimeMillis() + ".png")
         val outputOptions = ImageCapture.OutputFileOptions
             .Builder(
-                file
+                imageFile!!
             )
             .build()
 
@@ -162,21 +160,6 @@ class CameraFragment : Fragment() {
 
                 override fun
                         onImageSaved(output: ImageCapture.OutputFileResults) {
-                    val msg = "Photo capture succeeded: ${output.savedUri}"
-                    Log.d(TAG, msg)
-
-                    val base64Image =
-                        requireContext().contentResolver.openInputStream(output.savedUri!!).use {
-                            val bitmap = BitmapFactory.decodeStream(it)
-                            val baos = ByteArrayOutputStream()
-                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
-                            Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT)
-                        }
-                    capturedImage = base64Image
-                    Log.v(TAG, "CapturedImage: ${capturedImage.length}")
-                    file.delete()
-
-                    // TODO: Figure out audio...
                     startLoading(isDefaultPrompt)
                 }
             }
@@ -237,11 +220,11 @@ class CameraFragment : Fragment() {
      * TODO: Somehow check and wait for the `recorderFile` to be saved.
      */
     private fun startLoading(isDefaultPrompt: Boolean) {
-        if (capturedImage != "") {
+        imageFile?.let {
             requireView().findNavController().navigate(
                 CameraFragmentDirections.actionCameraFragmentToLoadingFragment(
                     if (isDefaultPrompt) null else recorderFile,
-                    capturedImage
+                    it
                 )
             )
         }
