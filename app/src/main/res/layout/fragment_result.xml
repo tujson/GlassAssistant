@@ -7,18 +7,29 @@
     android:background="@color/black"
     tools:context=".fragments.ResultFragment">
 
-    <TextView
-        android:id="@+id/tvResult"
+    <ScrollView
+        android:id="@+id/svResult"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="24dp"
-        android:scrollbars="vertical"
-        android:textColor="@color/white"
-        android:textSize="32sp"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Hello, world" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/tvResult"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textSize="32sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Hello, world" />
+
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
