@@ -10,9 +10,13 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import dev.synople.glassassistant.R
+import dev.synople.glassassistant.utils.GlassGesture
+import dev.synople.glassassistant.utils.GlassGestureDetector
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
 import org.json.JSONObject
 
-private val TAG = CameraFragment::class.simpleName!!
+private val TAG = ResultFragment::class.simpleName!!
 
 class ResultFragment : Fragment() {
 
@@ -43,6 +47,23 @@ class ResultFragment : Fragment() {
             } else {
                 false
             }
+        }
+
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        EventBus.getDefault().unregister(this)
+    }
+
+    @Subscribe
+    fun onGesture(glassGesture: GlassGesture) {
+        when (glassGesture.gesture) {
+            GlassGestureDetector.Gesture.TAP -> {
+                requireView().findNavController().navigate(R.id.action_resultFragment_to_cameraFragment)
+            }
+            else -> {}
         }
     }
 }
