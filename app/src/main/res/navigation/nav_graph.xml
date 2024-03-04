@@ -27,7 +27,8 @@
             app:destination="@id/resultFragment" />
         <argument
             android:name="recorderFile"
-            app:argType="java.io.File" />
+            app:argType="java.io.File"
+            app:nullable="true" />
         <argument
             android:name="base64Image"
             app:argType="string" />

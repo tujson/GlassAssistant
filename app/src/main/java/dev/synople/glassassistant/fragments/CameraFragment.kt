@@ -91,8 +91,6 @@ class CameraFragment : Fragment() {
         view.setOnKeyListener { _, keyCode, event ->
             if (keyCode == KeyEvent.KEYCODE_CAMERA) {
                 if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
-                    Log.v(TAG, "Camera Key Down")
-
                     requireActivity().runOnUiThread {
                         view.findViewById<TextView>(R.id.tvCamera).text =
                             "Speak a prompt, then let go."
@@ -101,16 +99,20 @@ class CameraFragment : Fragment() {
                     isRecorderFileWritten = false
                     recorder.start()
                 } else if (event.action == KeyEvent.ACTION_UP) {
-                    Log.v(TAG, "Camera Key Up")
-                    recorder.stop()
-                    takePhoto()
+                    var isDefaultPrompt = false
+                    try {
+                        recorder.stop()
+                    } catch (e: RuntimeException) {
+                        Log.e(TAG, "Error stopping the recorder.", e)
+                        isDefaultPrompt = true
+                    }
+                    takePhoto(isDefaultPrompt)
                 }
                 true
             } else {
                 false
             }
         }
-
 
         EventBus.getDefault().register(this)
     }
@@ -127,8 +129,7 @@ class CameraFragment : Fragment() {
     fun onGesture(glassGesture: GlassGesture) {
         when (glassGesture.gesture) {
             GlassGestureDetector.Gesture.TAP -> {
-                Log.v(TAG, "onGesture: $glassGesture")
-                // TODO: Use a default text prompt.
+                takePhoto(true)
             }
 
             GlassGestureDetector.Gesture.TWO_FINGER_TAP -> {
@@ -139,7 +140,7 @@ class CameraFragment : Fragment() {
         }
     }
 
-    private fun takePhoto() {
+    private fun takePhoto(isDefaultPrompt: Boolean) {
         val imageCapture = imageCapture ?: return
 
         val file =
@@ -176,7 +177,7 @@ class CameraFragment : Fragment() {
                     file.delete()
 
                     // TODO: Figure out audio...
-                    startLoading()
+                    startLoading(isDefaultPrompt)
                 }
             }
         )
@@ -235,11 +236,11 @@ class CameraFragment : Fragment() {
      *
      * TODO: Somehow check and wait for the `recorderFile` to be saved.
      */
-    private fun startLoading() {
+    private fun startLoading(isDefaultPrompt: Boolean) {
         if (capturedImage != "") {
             requireView().findNavController().navigate(
                 CameraFragmentDirections.actionCameraFragmentToLoadingFragment(
-                    recorderFile,
+                    if (isDefaultPrompt) null else recorderFile,
                     capturedImage
                 )
             )

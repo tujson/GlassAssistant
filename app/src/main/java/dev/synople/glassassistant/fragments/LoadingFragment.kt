@@ -7,35 +7,39 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import dev.synople.glassassistant.R
+import dev.synople.glassassistant.dataStore
+import dev.synople.glassassistant.utils.GlassAssistantConstants
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 import okhttp3.Call
 import okhttp3.Callback
-import okhttp3.FormBody
-import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
 import java.io.IOException
 import java.time.Duration
 
 
 private val TAG = CameraFragment::class.simpleName!!
-const val OPEN_AI_API_KEY = ""
 
 class LoadingFragment : Fragment() {
     private val args: LoadingFragmentArgs by navArgs()
     private val okHttpClient = OkHttpClient.Builder()
         .readTimeout(Duration.ofSeconds(30))
         .build()
+
+    private var openAiApiKey = ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,8 +51,18 @@ class LoadingFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        lifecycleScope.launch {
+            requireContext().dataStore.data.firstOrNull { true }?.let { value ->
+                openAiApiKey = value[GlassAssistantConstants.DATASTORE_OPEN_AI_API_KEY] ?: ""
+            }
 
-        val paramRecorderFile = args.recorderFile
+            args.recorderFile?.let {
+                getSpeechResponse(it)
+            } ?: getVisionResponse(GlassAssistantConstants.DEFAULT_PROMPT, args.base64Image)
+        }
+    }
+
+    private fun getSpeechResponse(paramRecorderFile: File) {
         val speechRequestPayload = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
             .addFormDataPart(
@@ -57,12 +71,11 @@ class LoadingFragment : Fragment() {
                 paramRecorderFile.asRequestBody("audio/mp4".toMediaTypeOrNull())
             )
             .addFormDataPart("model", "whisper-1")
-            .addFormDataPart("resposne_format", "text")
             .build()
         val openAiSpeechRequest = Request.Builder()
             .url("https://api.openai.com/v1/audio/transcriptions")
             .addHeader("Content-Type", "multipart/form-data")
-            .addHeader("Authorization", "Bearer $OPEN_AI_API_KEY")
+            .addHeader("Authorization", "Bearer $openAiApiKey")
             .post(speechRequestPayload)
             .build()
         okHttpClient.newCall(openAiSpeechRequest).enqueue(object : Callback {
@@ -79,7 +92,7 @@ class LoadingFragment : Fragment() {
                 val content = jsonResponse.getString("text")
 
                 requireActivity().runOnUiThread {
-                    view.findViewById<TextView>(R.id.tvLoading).text = content
+                    requireView().findViewById<TextView>(R.id.tvLoading).text = content
                 }
 
                 getVisionResponse(content, args.base64Image)
@@ -117,7 +130,7 @@ class LoadingFragment : Fragment() {
         val openAiVisionRequest = Request.Builder()
             .url("https://api.openai.com/v1/chat/completions")
             .addHeader("Content-Type", "application/json")
-            .addHeader("Authorization", "Bearer $OPEN_AI_API_KEY")
+            .addHeader("Authorization", "Bearer $openAiApiKey")
             .post(visionRequestPayload.toString().toRequestBody())
             .build()
 
