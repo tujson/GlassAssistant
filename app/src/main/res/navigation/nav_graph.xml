@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/cameraFragment">
+    app:startDestination="@id/apiKeyFragment">
 
     <fragment
         android:id="@+id/cameraFragment"
@@ -40,5 +40,14 @@
         <argument
             android:name="response"
             app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/apiKeyFragment"
+        android:name="dev.synople.glassassistant.fragments.ApiKeyFragment"
+        android:label="fragment_api_key"
+        tools:layout="@layout/fragment_api_key" >
+        <action
+            android:id="@+id/action_apiKeyFragment_to_cameraFragment"
+            app:destination="@id/cameraFragment" />
     </fragment>
 </navigation>

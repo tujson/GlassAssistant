@@ -5,7 +5,6 @@ import android.graphics.BitmapFactory
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.Bundle
-import android.os.FileObserver
 import android.util.Base64
 import android.util.Log
 import android.util.Size
@@ -86,7 +85,8 @@ class CameraFragment : Fragment() {
                     Log.v(TAG, "Camera Key Down")
 
                     requireActivity().runOnUiThread {
-                        view.findViewById<TextView>(R.id.tvCamera).text = "Speak a prompt, then let go."
+                        view.findViewById<TextView>(R.id.tvCamera).text =
+                            "Speak a prompt, then let go."
                     }
 
                     isRecorderFileWritten = false
@@ -215,5 +215,4 @@ class CameraFragment : Fragment() {
             )
         }
     }
-
 }

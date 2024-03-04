@@ -1,13 +1,8 @@
 package dev.synople.glassassistant
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.KeyEvent
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AppCompatActivity
 
-
-private const val ASK_MULTIPLE_PERMISSION_REQUEST_CODE = 101;
 
 class MainActivity : AppCompatActivity() {
 
