@@ -1,7 +1,6 @@
 package dev.synople.glassassistant.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -28,7 +27,8 @@ class ResultFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val jsonResponse = JSONObject(args.response)
-        val content = jsonResponse.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content")
+        val content = jsonResponse.getJSONArray("choices").getJSONObject(0).getJSONObject("message")
+            .getString("content")
 
         view.findViewById<TextView>(R.id.tvResult).text = content
 
@@ -36,7 +36,7 @@ class ResultFragment : Fragment() {
         view.requestFocus()
         view.setOnKeyListener { _, keyCode, event ->
             if (keyCode == KeyEvent.KEYCODE_CAMERA) {
-        if (event.action == KeyEvent.ACTION_UP) {
+                if (event.action == KeyEvent.ACTION_UP) {
                     view.findNavController().navigate(R.id.action_resultFragment_to_cameraFragment)
                 }
                 true

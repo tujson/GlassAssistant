@@ -34,11 +34,11 @@
         android:id="@+id/tvClear"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_margin="32dp"
         android:text="Two finger tap to clear API key."
         android:textAlignment="center"
         android:textColor="@color/white"
         android:textSize="18sp"
-        android:layout_margin="32dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
