@@ -26,7 +26,19 @@
         android:textAlignment="center"
         android:textColor="@color/white"
         android:textSize="32sp"
-        tools:text="Hold the camera button."
+        app:layout_constraintBottom_toTopOf="@+id/tvClear"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:text="Hold the camera button." />
+
+    <TextView
+        android:id="@+id/tvClear"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Two finger tap to clear API key."
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

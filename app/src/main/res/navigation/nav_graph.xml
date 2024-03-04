@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_cameraFragment_to_loadingFragment"
             app:destination="@id/loadingFragment" />
+        <action
+            android:id="@+id/action_cameraFragment_to_apiKeyFragment"
+            app:destination="@id/apiKeyFragment" />
     </fragment>
     <fragment
         android:id="@+id/loadingFragment"

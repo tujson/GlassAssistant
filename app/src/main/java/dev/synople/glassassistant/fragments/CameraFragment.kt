@@ -21,10 +21,19 @@ import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.datastore.preferences.core.edit
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import dev.synople.glassassistant.R
+import dev.synople.glassassistant.dataStore
 import dev.synople.glassassistant.databinding.FragmentCameraBinding
+import dev.synople.glassassistant.utils.GlassAssistantConstants
+import dev.synople.glassassistant.utils.GlassGesture
+import dev.synople.glassassistant.utils.GlassGestureDetector
+import kotlinx.coroutines.launch
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
 import java.io.ByteArrayOutputStream
 import java.io.File
 
@@ -34,9 +43,10 @@ class CameraFragment : Fragment() {
 
     private var _binding: FragmentCameraBinding? = null
     private val binding get() = _binding!!
-    private var imageCapture: ImageCapture? = null
 
+    private var imageCapture: ImageCapture? = null
     private lateinit var recorder: MediaRecorder
+
     private lateinit var recorderFile: File
     private var isRecorderFileWritten = false
     private var capturedImage = ""
@@ -51,13 +61,6 @@ class CameraFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-//
-//        // Debug flow to reset DataStore until I figure out a better way to reset it.
-//        lifecycleScope.launch {
-//            requireContext().dataStore.edit { settings ->
-//                settings[GlassAssistantConstants.DATASTORE_OPEN_AI_API_KEY] = ""
-//            }
-//        }
 
         view.findViewById<TextView>(R.id.tvCamera).text = "Hold the camera button."
         prepareRecorder()
@@ -86,7 +89,6 @@ class CameraFragment : Fragment() {
         view.isFocusableInTouchMode = true
         view.requestFocus()
         view.setOnKeyListener { _, keyCode, event ->
-            Log.v(TAG, "$keyCode $event")
             if (keyCode == KeyEvent.KEYCODE_CAMERA) {
                 if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
                     Log.v(TAG, "Camera Key Down")
@@ -108,12 +110,33 @@ class CameraFragment : Fragment() {
                 false
             }
         }
+
+
+        EventBus.getDefault().register(this)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
         recorder.release()
+
+        EventBus.getDefault().unregister(this)
+    }
+
+    @Subscribe
+    fun onGesture(glassGesture: GlassGesture) {
+        when (glassGesture.gesture) {
+            GlassGestureDetector.Gesture.TAP -> {
+                Log.v(TAG, "onGesture: $glassGesture")
+                // TODO: Use a default text prompt.
+            }
+
+            GlassGestureDetector.Gesture.TWO_FINGER_TAP -> {
+                clearApiKey()
+            }
+
+            else -> {}
+        }
     }
 
     private fun takePhoto() {
@@ -220,6 +243,17 @@ class CameraFragment : Fragment() {
                     capturedImage
                 )
             )
+        }
+    }
+
+    private fun clearApiKey() {
+        lifecycleScope.launch {
+            requireContext().dataStore.edit { settings ->
+                settings[GlassAssistantConstants.DATASTORE_OPEN_AI_API_KEY] = ""
+
+                requireView().findNavController()
+                    .navigate(R.id.action_cameraFragment_to_apiKeyFragment)
+            }
         }
     }
 }
