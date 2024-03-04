@@ -1,5 +1,8 @@
 package dev.synople.glassassistant.utils
 
+import androidx.datastore.preferences.core.stringPreferencesKey
+
 object GlassAssistantConstants {
-    const val DATASTORE_OPEN_AI_API_KEY = "openAiApiKey"
+    val DATASTORE_OPEN_AI_API_KEY =
+        stringPreferencesKey("openAiApiKey")
 }

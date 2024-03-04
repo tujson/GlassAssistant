@@ -28,7 +28,6 @@ import dev.synople.glassassistant.databinding.FragmentCameraBinding
 import java.io.ByteArrayOutputStream
 import java.io.File
 
-
 private val TAG = CameraFragment::class.simpleName!!
 
 class CameraFragment : Fragment() {
@@ -52,6 +51,13 @@ class CameraFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+//
+//        // Debug flow to reset DataStore until I figure out a better way to reset it.
+//        lifecycleScope.launch {
+//            requireContext().dataStore.edit { settings ->
+//                settings[GlassAssistantConstants.DATASTORE_OPEN_AI_API_KEY] = ""
+//            }
+//        }
 
         view.findViewById<TextView>(R.id.tvCamera).text = "Hold the camera button."
         prepareRecorder()
@@ -80,6 +86,7 @@ class CameraFragment : Fragment() {
         view.isFocusableInTouchMode = true
         view.requestFocus()
         view.setOnKeyListener { _, keyCode, event ->
+            Log.v(TAG, "$keyCode $event")
             if (keyCode == KeyEvent.KEYCODE_CAMERA) {
                 if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
                     Log.v(TAG, "Camera Key Down")
