@@ -1,6 +1,7 @@
 package dev.synople.glassassistant.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +15,7 @@ import dev.synople.glassassistant.utils.GlassGesture
 import dev.synople.glassassistant.utils.GlassGestureDetector
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
+import org.json.JSONException
 import org.json.JSONObject
 
 private val TAG = ResultFragment::class.simpleName!!
@@ -30,9 +32,16 @@ class ResultFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val jsonResponse = JSONObject(args.response)
-        val content = jsonResponse.getJSONArray("choices").getJSONObject(0).getJSONObject("message")
-            .getString("content")
+        val content = try {
+            JSONObject(args.response)
+                .getJSONArray("choices")
+                .getJSONObject(0)
+                .getJSONObject("message")
+                .getString("content")
+        } catch (e: JSONException) {
+            Log.w(TAG, "Unexpected response from OpenAI: ${args.response}")
+            args.response
+        }
 
         view.findViewById<TextView>(R.id.tvResult).text = content
 
